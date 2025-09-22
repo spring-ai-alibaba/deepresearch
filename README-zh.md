@@ -150,7 +150,7 @@ Langfuse 配置
 5. 将凭据编码为 Base64：
    ```bash
    echo -n "public_key:secret_key" | base64
-   ``` 
+   ```
    ```Windows PowerShell
    [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("public_key:secret_key"))
    ```
@@ -160,7 +160,7 @@ Langfuse 配置
 
 ## Contributors
 
-GitHub:
+感谢如下贡献人员的付出，逐渐完善本项目，其 Github 账号如下（排名顺序不分先后）：
 - [yingzi](https://github.com/GTyingzi)
 - [zhouyou](https://github.com/zhouyou9505)
 - [NOBODY](https://github.com/SCMRCORE)
@@ -174,3 +174,15 @@ GitHub:
 - [AliciaHu](https://github.com/AliciaHu)
 - [swl](https://github.com/hbsjz-swl)
 - [huangzhen](https://github.com/james-huangzhen)
+- [Tfh-Yqf](https://github.com/Tfh-Yqf)
+- [anyin-xyz](https://github.com/anyin-xyz)
+- [zhou youkang](https://github.com/mengnankkkk)
+- [supermonkeyguys](https://github.com/supermonkeyguys)
+- [yuluo-yx](https://github.com/yuluo-yx)
+- [Ken Liu](https://github.com/chickenlj)
+- [co63ox](https://github.com/co63oc)
+
+
+
+![](https://yingziimage.oss-cn-beijing.aliyuncs.com/img/EtvebDfKHoQnd4xfJqPczqSDnzh.png)
+
