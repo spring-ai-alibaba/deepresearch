@@ -2,13 +2,13 @@
 
 ## 架构图
 
-![架构图](../docs/imgs/deepresearch-workflow.png)
+![架构图](./imgs/deepresearch-workflow.png)
 
 > 上图展示了 deepresearch 的核心模块分层与主要调用关系。
 
 ## 主要流程图
 
-![主要流程图](../docs/imgs/202506302113562.png)
+![主要流程图](./imgs/flow.png)
 
 > 上图展示了用户请求在 deepresearch 系统中的主要流转流程。
 
@@ -183,6 +183,6 @@ Langfuse 配置
 - [co63ox](https://github.com/co63oc)
 
 
-
-![](https://yingziimage.oss-cn-beijing.aliyuncs.com/img/EtvebDfKHoQnd4xfJqPczqSDnzh.png)
+社区研究小组
+![主要流程图](./imgs/qrcode.png)
 
