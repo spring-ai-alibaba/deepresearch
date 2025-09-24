@@ -1,68 +1,76 @@
-本项目基于 spring-ai-alibaba-graph 实现深度研究
+[中文版本](README_zh.md)
 
-[English Version](README.en.md)
+Deep Research implemented based on spring-ai-alibaba-graph.
 
-## 架构图
+## Architecture
+[Open full-size image](./imgs/deepresearch-workflow-en.png)
 
-![架构图](./imgs/deepresearch-workflow.png)
+<img src="./imgs/deepresearch-workflow-en.png" alt="Architecture" style="width:1400px; max-width:100%; height:auto; display:block; margin:0 auto;" />
 
-> 上图展示了 deepresearch 的核心模块分层与主要调用关系。
 
-## 主要流程图
+> The diagram shows the layered architecture and main call relationships of the core modules in deepresearch.
 
-![主要流程图](./imgs/flow.png)
+## Main Flow
 
-> 上图展示了用户请求在 deepresearch 系统中的主要流转流程。
+![Main Flow](./imgs/flow-en.png)
+
+> The diagram shows the primary flow of a user request within the deepresearch system.
 
 <video width="640" height="360" controls>
 <source src="../deepresearh-display.mp4" type="video/mp4">
 </video>
 
 
-## 配置
+## Configuration
 
-### 必配
+### Required
 
 - DashScope API: `${AI_DASHSCOPE_API_KEY}`
+  
+  DashScope API key
 - TavilySearch API: `${TAVILY_API_KEY}`
-- 报告导出路径: `${AI_DEEPRESEARCH_EXPORT_PATH}`
-  TIP：不填会存储在项目根路径下
+  
+  TavilySearch API key
+- Report export path: `${AI_DEEPRESEARCH_EXPORT_PATH}`
+  
+  TIP: if omitted, files will be stored in the project root
 
-### 选配
+### Optional
 
-**搜索服务(默认tavily)**
+**Search Services (default: Tavily)**
 
 - Jina API: `${JINA_API_KEY}`
 - aliyunaisearch:
   - api-key: `${ALIYUN_AI_SEARCH_API_KEY}`
   - base-url: `${ALIYUN_AI_SEARCH_BASE_URL}`
 
-**存储选配(默认内存)** 
+**Storage Options (default: in-memory)** 
 
-- redis:`${REDIS-PASSWORD}`
-  TIP：默认localhost:6379
+- redis: `${REDIS-PASSWORD}`
+  
+  Redis password; TIP: defaults to localhost:6379
 
-**编程节点(给大模型提供编程能力)**
+**Coding Node (programming capability for LLM)**
 
-- Coder节点的Python执行器跑在Docker容器中，需要额外为其配置Docker信息
-  - 在配置文件的`spring.ai.alibaba.deepresearch.python-coder.docker-host`字段中设置DockerHost，默认为`unix:///var/run/docker.sock`。
-  本项目需要使用`python:3-slim`镜像创建临时容器，也可以自己定制包含一些常用的第三方库的镜像，第三方库需要安装在镜像的`/app/dependency`文件夹里，在配置文件中设置`spring.ai.alibaba.deepresearch.python-coder.image-name`的值指定镜像名称。
+- The Python executor of the Coder node runs inside a Docker container and requires Docker configuration.
+  - Set `spring.ai.alibaba.deepresearch.python-coder.docker-host` in the config file; default is `unix:///var/run/docker.sock`.
+  The project uses the `python:3-slim` image to create ephemeral containers. You can customize an image that includes common third-party libraries. Install them under `/app/dependency` inside the image, and set `spring.ai.alibaba.deepresearch.python-coder.image-name` to the image name in the config file.
 
 **RAG**
 
 - ElasticSearch: 
-    - `application.yml`配置 spring.ai.alibaba.deepresearch.rag.enabled: true
-    - `application.yml`配置 spring.ai.alibaba.deepresearch.rag.vector-store-type: elasticsearch
-    - `application.yml`配置 spring.ai.alibaba.deepresearch.rag.elasticsearch 配置 ES相关信息
-    - 启动ES中间件 ， 在spring-ai-alibaba-deepresearch目录下执行以下命令
+    - In `application.yml`, set `spring.ai.alibaba.deepresearch.rag.enabled: true`
+    - In `application.yml`, set `spring.ai.alibaba.deepresearch.rag.vector-store-type: elasticsearch`
+    - In `application.yml`, configure `spring.ai.alibaba.deepresearch.rag.elasticsearch` with ES connection details
+    - Start ES middleware from the project root with the command below
         ```shell
         docker compose -f docker-compose-middleware.yml up -d
         ```
-    - 在【知识库管理】页面新增知识库，并且上传对应的文档到 ES
+    - In the Knowledge Base page, create a new knowledge base and upload documents to ES
 
-**MCP服务(待完善)**
+**MCP Services (WIP)**
 
-- 高德地图MCP
+- AMap MCP
 
 ```json
 {
@@ -71,7 +79,7 @@
             {
                 "url": "https://mcp.amap.com?key=${AI_DASHSCOPE_API_KEY}",
                 "sse-endpoint": null,
-                "description": "这是一个高德地图服务",
+                "description": "This is an AMap service",
                 "enabled": false
             }
         ]
@@ -80,53 +88,51 @@
 ```
 
 
+## Related APIs, Tools, and MCP Integration Docs
 
-## 相关API、工具、MCP接入文档
+- DashScope (Alibaba Bailian): https://bailian.console.aliyun.com
 
-- DashScope 阿里云百炼：https://bailian.console.aliyun.com
-
-- tavily API文档：https://docs.tavily.com/documentation/api-reference/endpoint/search
-- Jina API文档：https://jina.ai/reader
-- 高德地图MCP：https://lbs.amap.com/api/mcp-server/gettingstarted#t1
-
+- Tavily API Docs: https://docs.tavily.com/documentation/api-reference/endpoint/search
+- Jina API Docs: https://jina.ai/reader
+- AMap MCP Docs: https://lbs.amap.com/api/mcp-server/gettingstarted#t1
 
 
-## 项目启动
-### 快速启动
-右键点击DeepResearchApplication类的Run命令启动
+## Getting Started
+### Quick Start
+Right-click the `DeepResearchApplication` class and run it.
 
-### maven启动
-在spring-ai-alibaba-deepresearch项目根目录下，使用maven启动项目
+### Run with Maven
+From the project root, run with Maven:
 ```angular2html
 mvn spring-boot:run
 ```
 
 
-### Docker版启动
-- 在deepresearch项目工程目录下执行构建命令，构建docker镜像大约要花费5分钟左右，具体时间取决于网络速度
+### Run with Docker
+- Build the Docker image from the project directory. This may take ~5 minutes depending on network speed.
 ```shell
 docker build -t alibaba-deepresearch:v1.0 . 
 ```
-- 构建完成后，执行docker run命令启动镜像，设置环境变量
+- After building, run the container and set environment variables:
 ```shell
 docker run -d \
   --name alibaba-deepresearch \
   -e AI_DASHSCOPE_API_KEY="your_key_here" \
   -e TAVILY_API_KEY="your_key_here" \
-#  -e JINA_API_KEY="your_key_here" \ 选填
+#  -e JINA_API_KEY="your_key_here" \ optional
   -p 8080:8080 \
   alibaba-deepresearch:v1.0
 ```
-- 或者使用docker-compose up命令启动,当前容器包括Redis，ElasticSearch,deep research app.
+- Alternatively, use docker-compose to start Redis, ElasticSearch, and the app:
 ```shell
   docker-compose up
 ```
-> **注意**：
-> - .env文件中设置api-key信息
-> - dockerConfig目录下有对应应用的配置文件，也可在配置文件中设置key及相关配置信息
+> **Note**:
+> - Set API keys in the `.env` file
+> - Config files are under `dockerConfig`; you can also set keys and related configs there
 
-**测试用例**
-相关请求可见：[DeepResearch.http](DeepResearch.http)
+**Test Cases**
+See `DeepResearch.http` for sample requests.
 
 ```curl
 curl --location 'http://localhost:8080/chat/stream' \
@@ -134,35 +140,35 @@ curl --location 'http://localhost:8080/chat/stream' \
 --data '{
     "thread_id": "__default_",
     "enable_deepresearch": false,
-    "query": "请为我分析泡泡玛特现象级爆火的原因",
+    "query": "Please analyze the reasons for the explosive popularity of Pop Mart",
     "max_step_num": 2,
     "auto_accepted_plan": true
 }'
 ```
 
-**调试与观测**
+**Debugging & Observability**
 
-Langfuse 配置
+Langfuse Configuration
 
-#### 使用 Langfuse 云端服务
-1. 在 [https://cloud.langfuse.com](https://cloud.langfuse.com) 注册账户
-2. 创建新项目
-3. 导航到 **Settings** → **API Keys**
-4. 生成新的 API 密钥对（公钥和私钥）
-5. 将凭据编码为 Base64：
+#### Using Langfuse Cloud
+1. Sign up at [https://cloud.langfuse.com](https://cloud.langfuse.com)
+2. Create a new project
+3. Go to **Settings** → **API Keys**
+4. Generate a new API key pair (public and secret)
+5. Encode the credentials to Base64:
    ```bash
    echo -n "public_key:secret_key" | base64
    ```
    ```Windows PowerShell
    [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("public_key:secret_key"))
    ```
-6. yml文件中选择对应的endpoint，将编码后的字符串作为环境变量 `YOUR_BASE64_ENCODED_CREDENTIALS`
+6. In your yml, select the endpoint and set the encoded string as env `YOUR_BASE64_ENCODED_CREDENTIALS`
 
-参考： https://langfuse.com/docs/opentelemetry/get-started
+Reference: https://langfuse.com/docs/opentelemetry/get-started
 
 ## Contributors
 
-感谢如下贡献人员的付出，逐渐完善本项目，其 Github 账号如下（排名顺序不分先后）：
+Thanks to the following contributors for improving this project (unordered):
 - [yingzi](https://github.com/GTyingzi)
 - [zhouyou](https://github.com/zhouyou9505)
 - [NOBODY](https://github.com/SCMRCORE)
@@ -185,6 +191,7 @@ Langfuse 配置
 - [co63ox](https://github.com/co63oc)
 
 
-社区研究小组
-![主要流程图](./imgs/qrcode.png)
+Community Study Group
+![Main Flow](./imgs/qrcode.png)
+
 
