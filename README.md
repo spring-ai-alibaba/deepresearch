@@ -1,5 +1,7 @@
 本项目基于 spring-ai-alibaba-graph 实现深度研究
 
+[English Version](README.en.md)
+
 ## 架构图
 
 ![架构图](./imgs/deepresearch-workflow.png)
