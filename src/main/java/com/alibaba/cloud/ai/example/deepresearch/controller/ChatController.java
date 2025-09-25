@@ -130,7 +130,7 @@ public class ChatController {
 		else {
 			ChatRequestProcess.initializeObjectMap(chatRequest, objectMap);
 			logger.info("init inputs: {}", objectMap);
-			AsyncGenerator<NodeOutput> resultFuture = compiledGraph.stream(objectMap, runnableConfig);
+			Flux<NodeOutput> resultFuture = compiledGraph.fluxStream(objectMap, runnableConfig);
 			graphProcess.processStream(graphId, resultFuture, sink);
 		}
 
@@ -168,7 +168,7 @@ public class ChatController {
 		state.withResume();
 		state.withHumanFeedback(new OverAllState.HumanFeedback(objectMap, "research_team"));
 
-		AsyncGenerator<NodeOutput> resultFuture = compiledGraph.streamFromInitialNode(state, runnableConfig);
+		Flux<NodeOutput> resultFuture = compiledGraph.fluxStreamFromInitialNode(state, runnableConfig);
 		graphProcess.processStream(new GraphId(humanFeedback.sessionId(), humanFeedback.threadId()), resultFuture,
 				sink);
 
