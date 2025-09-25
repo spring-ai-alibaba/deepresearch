@@ -24,16 +24,20 @@ import com.alibaba.cloud.ai.example.deepresearch.model.req.GraphId;
 import com.alibaba.cloud.ai.example.deepresearch.service.ReportService;
 import com.alibaba.cloud.ai.example.deepresearch.service.SessionContextService;
 import com.alibaba.cloud.ai.example.deepresearch.util.StateUtil;
+import com.alibaba.cloud.ai.graph.GraphResponse;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
 import com.alibaba.cloud.ai.graph.state.strategy.ReplaceStrategy;
-import com.alibaba.cloud.ai.graph.streaming.StreamingChatGenerator;
+import com.alibaba.cloud.ai.graph.streaming.FluxConverter;
+import com.alibaba.cloud.ai.graph.streaming.StreamingOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.util.StringUtils;
+import reactor.core.publisher.Flux;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -120,9 +124,9 @@ public class ReporterNode implements NodeAction {
 		inputMap.put(stepTitleKey, "[报告生成]");
 		state.input(inputMap);
 
-		var streamResult = reporterAgent.prompt().messages(messages).stream().chatResponse();
+		Flux<ChatResponse> streamResult = reporterAgent.prompt().messages(messages).stream().chatResponse();
 
-		var generator = StreamingChatGenerator.builder()
+		Flux<GraphResponse<StreamingOutput>> generator = FluxConverter.builder()
 			.startingNode(prefix)
 			.startingState(state)
 			.mapResult(response -> {
@@ -139,7 +143,7 @@ public class ReporterNode implements NodeAction {
 				}
 				return Map.of("final_report", finalReport, "thread_id", threadId);
 			})
-			.buildWithChatResponse(streamResult);
+			.build(streamResult);
 		Map<String, Object> resultMap = new HashMap<>();
 		resultMap.put("final_report", generator);
 		resultMap.put("thread_id", threadId);

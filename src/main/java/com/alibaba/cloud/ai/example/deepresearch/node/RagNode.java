@@ -20,9 +20,11 @@ import com.alibaba.cloud.ai.example.deepresearch.rag.core.HybridRagProcessor;
 import com.alibaba.cloud.ai.example.deepresearch.rag.strategy.FusionStrategy;
 import com.alibaba.cloud.ai.example.deepresearch.rag.strategy.RetrievalStrategy;
 import com.alibaba.cloud.ai.example.deepresearch.util.StateUtil;
+import com.alibaba.cloud.ai.graph.GraphResponse;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
-import com.alibaba.cloud.ai.graph.streaming.StreamingChatGenerator;
+import com.alibaba.cloud.ai.graph.streaming.FluxConverter;
+import com.alibaba.cloud.ai.graph.streaming.StreamingOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -121,12 +123,12 @@ public class RagNode implements NodeAction {
 
 		logger.info("RAG node produced a result.");
 
-		var generatedContent = StreamingChatGenerator.builder()
+		Flux<GraphResponse<StreamingOutput>> generatedContent = FluxConverter.builder()
 			.startingNode("rag_llm_stream")
 			.startingState(state)
 			.mapResult(response -> Map.of("rag_content",
 					Objects.requireNonNull(response.getResult().getOutput().getText())))
-			.buildWithChatResponse(streamResult);
+			.build(streamResult);
 
 		logger.info("RAG node produced a streaming result.");
 

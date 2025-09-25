@@ -23,15 +23,19 @@ import com.alibaba.cloud.ai.example.deepresearch.util.NodeStepTitleUtil;
 import com.alibaba.cloud.ai.example.deepresearch.util.ReflectionProcessor;
 import com.alibaba.cloud.ai.example.deepresearch.util.ReflectionUtil;
 import com.alibaba.cloud.ai.example.deepresearch.util.StateUtil;
+import com.alibaba.cloud.ai.graph.GraphResponse;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
-import com.alibaba.cloud.ai.graph.streaming.StreamingChatGenerator;
+import com.alibaba.cloud.ai.graph.streaming.FluxConverter;
+import com.alibaba.cloud.ai.graph.streaming.StreamingOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.mcp.AsyncMcpToolCallbackProvider;
+import reactor.core.publisher.Flux;
 
 import java.util.HashMap;
 import java.util.List;
@@ -112,7 +116,7 @@ public class CoderNode implements NodeAction {
 			}
 
 			// Create stream with error handling
-			var streamResult = requestSpec.stream()
+			Flux<ChatResponse> streamResult = requestSpec.stream()
 				.chatResponse()
 				.doOnError(error -> StateUtil.handleStepError(assignedStep, nodeName, error, logger));
 
@@ -126,7 +130,7 @@ public class CoderNode implements NodeAction {
 
 			logger.info("CoderNode {} starting streaming with key: {}", executorNodeId, nodeNum);
 
-			var generator = StreamingChatGenerator.builder()
+			Flux<GraphResponse<StreamingOutput>> generator = FluxConverter.builder()
 				.startingNode(nodeNum)
 				.startingState(state)
 				.mapResult(response -> {
@@ -139,8 +143,7 @@ public class CoderNode implements NodeAction {
 
 					updated.put("coder_content_" + executorNodeId, coderContent);
 					return updated;
-				})
-				.buildWithChatResponse(streamResult);
+				}).build(streamResult);
 
 			updated.put("coder_content_" + executorNodeId, generator);
 			return updated;

@@ -31,15 +31,15 @@ export default defineConfig({
         target: 'http://localhost:18080',
         changeOrigin: true,
       },
-      '/deep-research': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/deep-research/, '')
-      },
       '/stream': {
         target: 'http://localhost:8081',
         changeOrigin: true,
       },
+      // 添加聊天相关接口的代理配置
+      '/chat': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      }
     },
   },
   plugins: [vue(), vueJsx()],

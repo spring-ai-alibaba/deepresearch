@@ -53,25 +53,31 @@ export class XStreamBody {
   }
 
   async readStream(updateHandle?: any) {
-    let tmp = ''
     const response = await fetch(this.requestInfo.url, this.requestInfo.config)
 
     if (response.status !== 200) {
       return Promise.reject(response)
     }
+    
     // Read the stream
     for await (const chunk of XStream({
       readableStream: response.body,
     })) {
+      // 后端返回的是标准的SSE格式，直接使用即可
       const newChunk = {
         event: 'message',
-        data: JSON.stringify({
-          content: chunk.data,
-        }),
+        data: chunk.data,
       }
       this.lines.value = [...this.lines.value, newChunk]
       if (updateHandle) {
-        updateHandle(chunk.data)
+        // 解析后端返回的数据，提取content字段
+        try {
+          const parsedData = JSON.parse(chunk.data);
+          updateHandle(parsedData.content || parsedData);
+        } catch (e) {
+          // 如果不是JSON格式，直接传递原始数据
+          updateHandle(chunk.data);
+        }
       }
     }
   }
