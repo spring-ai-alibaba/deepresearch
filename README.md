@@ -2,6 +2,10 @@
 
 Deep Research implemented based on spring-ai-alibaba-graph.
 
+### Demo Show
+[![](https://yingziimage.oss-cn-beijing.aliyuncs.com/img/image-20251001121713795.png)](https://yingziimage.oss-cn-beijing.aliyuncs.com/video/deep_research.mov)
+video：https://yingziimage.oss-cn-beijing.aliyuncs.com/video/deep_research.mov
+
 ## Architecture
 [Open full-size image](./imgs/deepresearch-workflow-en.png)
 
@@ -15,10 +19,6 @@ Deep Research implemented based on spring-ai-alibaba-graph.
 ![Main Flow](./imgs/flow-en.png)
 
 > The diagram shows the primary flow of a user request within the deepresearch system.
-
-<video width="640" height="360" controls>
-<source src="../deepresearh-display.mp4" type="video/mp4">
-</video>
 
 
 ## Configuration
@@ -192,6 +192,7 @@ Thanks to the following contributors for improving this project (unordered):
 
 
 Community Study Group
+
 ![Main Flow](./imgs/qrcode.png)
 
 

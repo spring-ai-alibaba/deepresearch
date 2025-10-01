@@ -111,47 +111,38 @@ public class GraphProcess {
 		final String graphIdStr = this.safeObjectToJson(graphId);
 		// 创建一个任务，且遇见中断时停止图的运行
 		Future<?> future = executor.submit(() -> {
-			try {
-				generator.doOnComplete(() -> {
-					logger.info("Stream processing completed.");
-					sink.tryEmitComplete();
-					// 从任务Map中移出
-					graphTaskFutureMap.remove(graphId);
-				}).doOnError(e -> {
-					logger.error("Error in stream processing", e);
-					sink.tryEmitNext(
-							ServerSentEvent.builder(String.format(TASK_STOPPED_MESSAGE_TEMPLATE, graphIdStr, "服务异常"))
-								.build());
-					sink.tryEmitError(e);
-				}).subscribe(output -> {
-					String nodeName = output.node();
-					String content;
-					if (output instanceof StreamingOutput streamingOutput) {
-						logger.debug("Streaming output from node {}: {}, {}", nodeName,
-								streamingOutput.chatResponse() != null
-										&& streamingOutput.chatResponse().getResult() != null
-												? streamingOutput.chatResponse().getResult().getOutput().getText()
-												: "null response",
-								graphId);
+			generator.doOnNext(output -> {
+				logger.info("output = {}", output);
+				String nodeName = output.node();
+				String content;
+				if (output instanceof StreamingOutput streamingOutput) {
+					logger.debug("Streaming output from node {}: {}, {}", nodeName,
+							streamingOutput.chatResponse() != null && streamingOutput.chatResponse().getResult() != null
+									? streamingOutput.chatResponse().getResult().getOutput().getText()
+									: "null response",
+							graphId);
 
-						content = buildLLMNodeContent(nodeName, graphId, streamingOutput, output);
-					}
-					else {
-						logger.debug("Normal output from node {}: {}", nodeName, output.state().value("messages"));
-						content = buildNormalNodeContent(graphId, nodeName, output);
-					}
-					if (StringUtils.isNotEmpty(content)) {
-						sink.tryEmitNext(ServerSentEvent.builder(content).build());
-					}
-				});
-			}
-			catch (Exception e) {
+					content = buildLLMNodeContent(nodeName, graphId, streamingOutput, output);
+				}
+				else {
+					logger.debug("Normal output from node {}", nodeName);
+					content = buildNormalNodeContent(graphId, nodeName, output);
+				}
+				if (StringUtils.isNotEmpty(content)) {
+					sink.tryEmitNext(ServerSentEvent.builder(content).build());
+				}
+			}).doOnComplete(() -> {
+				logger.info("Stream processing completed.");
+				sink.tryEmitComplete();
+				// 从任务Map中移出
+				graphTaskFutureMap.remove(graphId);
+			}).doOnError(e -> {
 				logger.error("Error in stream processing", e);
 				sink.tryEmitNext(
 						ServerSentEvent.builder(String.format(TASK_STOPPED_MESSAGE_TEMPLATE, graphIdStr, "服务异常"))
 							.build());
 				sink.tryEmitError(e);
-			}
+			}).subscribe();
 		});
 		// 存放到Map中
 		Future<?> oldFuture = graphTaskFutureMap.put(graphId, future);
@@ -311,7 +302,7 @@ public class GraphProcess {
 			.orElse("");
 
 		// 添加空值检查，防止 NullPointerException
-		String textContent = "";
+		String textContent = streamingOutput.chunk();
 		if (streamingOutput.chatResponse() != null && streamingOutput.chatResponse().getResult() != null
 				&& streamingOutput.chatResponse().getResult().getOutput() != null) {
 			textContent = streamingOutput.chatResponse().getResult().getOutput().getText();
