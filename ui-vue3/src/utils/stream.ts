@@ -61,7 +61,7 @@ export class XStreamBody {
     
     // Read the stream
     for await (const chunk of XStream({
-      readableStream: response.body,
+      readableStream: response.body as ReadableStream,
     })) {
       // 后端返回的是标准的SSE格式，直接使用即可
       const newChunk = {
