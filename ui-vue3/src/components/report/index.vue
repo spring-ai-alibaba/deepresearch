@@ -83,7 +83,7 @@ import MD from '@/components/md/index.vue'
 import HtmlRenderer from '@/components/html/index.vue'
 import ReferenceSources from '@/components/reference-sources/index.vue'
 import { XStreamBody } from '@/utils/stream'
-import request from '@/utils/request'
+import { reportService } from '@/services'
 import type { NormalNode } from '@/types/node';
 
 const messageStore = useMessageStore()
@@ -360,30 +360,28 @@ const handleOnlineReport = async () => {
     return
   }
 
-  const xStreamBody = new XStreamBody('/api/reports/build-html?threadId=' + props.threadId, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'text/event-stream',
-      }})
-  let success = true
   try {
+      const xStreamBody = new XStreamBody('/api/reports/build-html?threadId=' + props.threadId, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'text/event-stream',
+          }})
+
       await xStreamBody.readStream((chunk: any) => {
           // 将接收到的HTML片段添加到数组中
           const chunkNode = JSON.parse(chunk)
           htmlChunks.value.push(chunkNode.result.output.text)
       })
+
       htmlLoading.value = false
+      // 缓存html报告
+      messageStore.htmlReport[props.convId] = htmlChunks.value
   } catch (e: any) {
-      console.error(e.statusText)
+      console.error('加载HTML报告失败:', e)
       htmlLoading.value = false
       // 如果出错，可以显示错误信息
-      htmlChunks.value = [`<div style="color: red; padding: 20px;">加载HTML报告时出错: ${e.statusText}</div>`]
-      success = false
-  }
-  // 缓存html报告
-  if(success) {
-      messageStore.htmlReport[props.convId] = htmlChunks.value
+      htmlChunks.value = [`<div style="color: red; padding: 20px;">加载HTML报告时出错: ${e.statusText || '未知错误'}</div>`]
   }
 }
 
@@ -394,19 +392,22 @@ const closeHtmlModal = () => {
   htmlLoading.value = false
 }
 
-const handleDownloadReport = () => {
-  request({
-    url: '/api/reports/export',
-    method: 'POST',
-    data: {
-      thread_id: props.threadId,
-      format: 'pdf'
-    }
-  }).then((response: any) => {
-    if(response.status === 'success') {
-      window.open(import.meta.env.VITE_BASE_URL + response.report_information.download_url, '_blank')
-    }
-  })
+const handleDownloadReport = async () => {
+  try {
+    const blob = await reportService.exportPDF(props.threadId)
+    // 创建下载链接
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `report-${props.threadId}.pdf`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  } catch (error: any) {
+    console.error('下载报告失败:', error)
+    // 可以显示错误提示
+  }
 }
 
 </script>

@@ -20,7 +20,6 @@ import { type MessageInfo, type SimpleType } from 'ant-design-x-vue'
 import { reactive } from 'vue'
 import { type MessageState, type MsgType } from '@/types/message'
 import { parseJsonTextStrict } from '@/utils/jsonParser'
-import type { LlmStreamNode, NormalNode } from '@/types/node'
 import type { UploadedFile } from '@/types/upload'
 export const useMessageStore = <Message extends SimpleType>() =>
   defineStore('messageStore', {

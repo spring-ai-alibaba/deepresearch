@@ -204,7 +204,7 @@ import {
   UploadOutlined,
   FileTextOutlined
 } from '@ant-design/icons-vue'
-import service from '@/utils/request'
+import { ragService } from '@/services'
 import { useKnowledgeStore, type KnowledgeBase, type KnowledgeFile } from '@/store/KnowledgeStore'
 
 const store = useKnowledgeStore()
@@ -419,8 +419,9 @@ async function handleBatchUpload(options: any) {
     console.log('上传文件信息:', file)
 
     // 发送上传请求
-    const res = await service.post('/api/rag/professional-kb/batch-upload', formData, {
-      timeout: 30000 // 30秒超时
+    const res = await ragService.batchUploadFiles({
+      files: file,
+      session_id: kb.kb_id
     })
     
     // 更新文件状态为成功

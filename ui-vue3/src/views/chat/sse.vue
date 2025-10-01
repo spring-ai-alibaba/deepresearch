@@ -20,6 +20,7 @@ import { Button, Flex } from 'ant-design-vue'
 import { Bubble, ThoughtChain, XStream } from 'ant-design-x-vue'
 import { computed, h, ref } from 'vue'
 import { XStreamBody } from '@/utils/stream'
+import { chatService } from '@/services'
 
 function request() {
   return new ReadableStream({
@@ -29,17 +30,10 @@ function request() {
       })
       let idx = 0
       for await (const chunk of XStream({
-        readableStream: response.body,
+        readableStream: response.body as ReadableStream,
       })) {
         if (idx > 10) break
-        let chunk1 = {
-          event: 'message',
-          data: JSON.stringify({
-            id: idx,
-            content: chunk.data,
-          }),
-        }
-        controller.enqueue(new TextEncoder().encode(chunk1))
+        controller.enqueue(new TextEncoder().encode(`event: message\ndata: ${JSON.stringify({id: idx, content: chunk.data})}\n\n`))
         idx++
       }
       controller.close()
@@ -75,13 +69,12 @@ const lines = ref<Record<string, string>[]>([])
 const content = computed(() => lines.value.map(line => JSON.parse(line.data).content).join(''))
 
 async function readStream() {
-  const response = await fetch('/stream', {
-    method: 'GET',
-  })
-  // 🌟 Read the stream
-  for await (const chunk of XStream({
-    readableStream: response.body,
-  })) {
+  try {
+    const readableStream = await chatService.getTestStream()
+    // 🌟 Read the stream
+    for await (const chunk of XStream({
+      readableStream,
+    })) {
     lines.value = [
       ...lines.value,
       {
@@ -92,10 +85,12 @@ async function readStream() {
       },
     ]
   }
+  } catch (error) {
+    console.error('Failed to read stream:', error)
+  }
 }
 
-const streamBody = new XStreamBody({
-  url: '/stream',
+const streamBody = new XStreamBody('/stream', {
   method: 'GET',
 })
 const contentInfo = computed(() => {
@@ -134,7 +129,7 @@ const contentInfo = computed(() => {
 </template>
 <style scoped>
 pre {
-  width: 'auto';
+  width: auto;
   margin: 0;
 
   code {
