@@ -107,42 +107,43 @@ public class GraphProcess {
 		}
 	}
 
-	public void processStream(GraphId graphId, Flux<NodeOutput> generator,
-							  Sinks.Many<ServerSentEvent<String>> sink) {
+	public void processStream(GraphId graphId, Flux<NodeOutput> generator, Sinks.Many<ServerSentEvent<String>> sink) {
 		final String graphIdStr = this.safeObjectToJson(graphId);
 		// 创建一个任务，且遇见中断时停止图的运行
 		Future<?> future = executor.submit(() -> {
-				generator.doOnNext(output -> {
-					logger.info("output = {}", output);
-					String nodeName = output.node();
-					String content;
-					if (output instanceof StreamingOutput streamingOutput) {
-						logger.debug("Streaming output from node {}: {}, {}", nodeName,
-								streamingOutput.chatResponse() != null && streamingOutput.chatResponse().getResult() != null ?
-										streamingOutput.chatResponse().getResult().getOutput().getText() : "null response", graphId);
+			generator.doOnNext(output -> {
+				logger.info("output = {}", output);
+				String nodeName = output.node();
+				String content;
+				if (output instanceof StreamingOutput streamingOutput) {
+					logger.debug("Streaming output from node {}: {}, {}", nodeName,
+							streamingOutput.chatResponse() != null && streamingOutput.chatResponse().getResult() != null
+									? streamingOutput.chatResponse().getResult().getOutput().getText()
+									: "null response",
+							graphId);
 
-						content = buildLLMNodeContent(nodeName, graphId, streamingOutput, output);
-					}
-					else {
-						logger.debug("Normal output from node {}", nodeName);
-						content = buildNormalNodeContent(graphId, nodeName, output);
-					}
-					if (StringUtils.isNotEmpty(content)) {
-						sink.tryEmitNext(ServerSentEvent.builder(content).build());
-					}
-				}).doOnComplete(() -> {
-					logger.info("Stream processing completed.");
-					sink.tryEmitComplete();
-					// 从任务Map中移出
-					graphTaskFutureMap.remove(graphId);
-				}).doOnError(e -> {
-					logger.error("Error in stream processing", e);
-					sink.tryEmitNext(
-							ServerSentEvent.builder(String.format(TASK_STOPPED_MESSAGE_TEMPLATE, graphIdStr, "服务异常"))
-									.build());
-					sink.tryEmitError(e);
-				}).subscribe();
-			});
+					content = buildLLMNodeContent(nodeName, graphId, streamingOutput, output);
+				}
+				else {
+					logger.debug("Normal output from node {}", nodeName);
+					content = buildNormalNodeContent(graphId, nodeName, output);
+				}
+				if (StringUtils.isNotEmpty(content)) {
+					sink.tryEmitNext(ServerSentEvent.builder(content).build());
+				}
+			}).doOnComplete(() -> {
+				logger.info("Stream processing completed.");
+				sink.tryEmitComplete();
+				// 从任务Map中移出
+				graphTaskFutureMap.remove(graphId);
+			}).doOnError(e -> {
+				logger.error("Error in stream processing", e);
+				sink.tryEmitNext(
+						ServerSentEvent.builder(String.format(TASK_STOPPED_MESSAGE_TEMPLATE, graphIdStr, "服务异常"))
+							.build());
+				sink.tryEmitError(e);
+			}).subscribe();
+		});
 		// 存放到Map中
 		Future<?> oldFuture = graphTaskFutureMap.put(graphId, future);
 		Optional.ofNullable(oldFuture).ifPresent((f) -> {
@@ -151,7 +152,6 @@ public class GraphProcess {
 			}
 		});
 	}
-
 
 	public void processStream(GraphId graphId, AsyncGenerator<NodeOutput> generator,
 			Sinks.Many<ServerSentEvent<String>> sink) {
@@ -300,15 +300,14 @@ public class GraphProcess {
 			.map(Generation::getMetadata)
 			.map(ChatGenerationMetadata::getFinishReason)
 			.orElse("");
-		
+
 		// 添加空值检查，防止 NullPointerException
 		String textContent = streamingOutput.chunk();
-		if (streamingOutput.chatResponse() != null && 
-			streamingOutput.chatResponse().getResult() != null && 
-			streamingOutput.chatResponse().getResult().getOutput() != null) {
+		if (streamingOutput.chatResponse() != null && streamingOutput.chatResponse().getResult() != null
+				&& streamingOutput.chatResponse().getResult().getOutput() != null) {
 			textContent = streamingOutput.chatResponse().getResult().getOutput().getText();
 		}
-		
+
 		Map<String, Serializable> response = Map.of(nodeName, textContent, "step_title", stepTitle, "visible",
 				prefixEnum.isVisible(), "finishReason", finishReason, "graphId", graphId);
 

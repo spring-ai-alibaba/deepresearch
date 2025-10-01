@@ -101,7 +101,10 @@ public class PlannerNode implements NodeAction {
 		inputMap.put(stepTitleKey, "[正在制定研究计划]");
 		state.input(inputMap);
 
-		Flux<ChatResponse> streamResult = plannerAgent.prompt(converter.getFormat()).messages(messages).stream().chatResponse();
+		Flux<ChatResponse> streamResult = plannerAgent.prompt(converter.getFormat())
+			.messages(messages)
+			.stream()
+			.chatResponse();
 
 		Flux<GraphResponse<StreamingOutput>> generator = FluxConverter.builder()
 			.startingNode(prefix)
