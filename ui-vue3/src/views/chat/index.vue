@@ -581,7 +581,7 @@ function parseSuccessMessage(msg: string) {
 // 解析消息记录 
 // status === local 表示人类  loading表示stream流正在返回  success表示steram完成返回
 // msg  当status === loading的时候，返回stream流的chunk  当status === success的时候，返回所有chunk的拼接字符串
-function parseMessage(status: MessageStatus, msg: string): any {
+function parseMessage(status: MessageStatus, msg: any): any {
   switch (status) {
     // 人类信息
     case 'local':
