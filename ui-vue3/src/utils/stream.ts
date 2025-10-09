@@ -49,7 +49,7 @@ export class XStreamBody {
   }
 
   content() {
-    return this.lines.value.map(line => JSON.parse(line.data).content).join('')
+    return this.lines.value.map(line => line.data).join('')
   }
 
   async readStream(updateHandle?: any) {
