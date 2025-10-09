@@ -55,10 +55,11 @@ export function useMessageParser(options: MessageParserOptions) {
       return { type: 'pending', data: jsonArray }
     }
 
-    // 如果已经有数据，则渲染思维链
+    // 如果已经有数据，则渲染思维链 
+    // TODO 性能问题
     const backgroundInvestigatorNode = report.filter((item: any) => item.nodeName === 'background_investigator')[0]
     if (backgroundInvestigatorNode) {
-      return { type: 'onDS', data: report }
+      return { type: 'onDS', data: [backgroundInvestigatorNode] }
     }
 
     return { type: 'pending', data: jsonArray }

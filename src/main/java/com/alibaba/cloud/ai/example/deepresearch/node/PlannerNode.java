@@ -16,8 +16,10 @@
 
 package com.alibaba.cloud.ai.example.deepresearch.node;
 
+import com.alibaba.cloud.ai.example.deepresearch.model.SessionHistory;
 import com.alibaba.cloud.ai.example.deepresearch.model.enums.StreamNodePrefixEnum;
 import com.alibaba.cloud.ai.example.deepresearch.model.dto.Plan;
+import com.alibaba.cloud.ai.example.deepresearch.model.req.GraphId;
 import com.alibaba.cloud.ai.example.deepresearch.util.StateUtil;
 import com.alibaba.cloud.ai.example.deepresearch.util.TemplateUtil;
 import com.alibaba.cloud.ai.graph.GraphResponse;
@@ -32,10 +34,12 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.MessageAggregator;
 import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -106,12 +110,19 @@ public class PlannerNode implements NodeAction {
 			.stream()
 			.chatResponse();
 
-		Flux<GraphResponse<StreamingOutput>> generator = FluxConverter.builder()
-			.startingNode(prefix)
-			.startingState(state)
-			.mapResult(response -> Map.of("planner_content",
-					Objects.requireNonNull(response.getResult().getOutput().getText())))
-			.build(streamResult);
+//		Flux<GraphResponse<StreamingOutput>> generator = FluxConverter.builder()
+//			.startingNode(prefix)
+//			.startingState(state)
+//			.mapResult(response -> Map.of("planner_content",
+//					Objects.requireNonNull(response.getResult().getOutput().getText())))
+//			.build(streamResult);
+		Flux<ChatResponse> aggregate = new MessageAggregator().aggregate(streamResult, response -> {
+			state.updateState(Map.of("planner_content", Objects.requireNonNull(response.getResult().getOutput().getText())));
+		});
+		Flux<GraphResponse<StreamingOutput>> generator = aggregate.map(response -> {
+			StreamingOutput output = new StreamingOutput(response, prefix, state);
+			return GraphResponse.of(output);
+		});
 
 		return Map.of("planner_content", generator);
 	}

@@ -49,7 +49,8 @@ export class XStreamBody {
   }
 
   content() {
-    return this.lines.value.map(line => line.data).join('')
+    const all = this.lines.value.map(line => line.data).join('')
+    return all;
   }
 
   async readStream(updateHandle?: any) {

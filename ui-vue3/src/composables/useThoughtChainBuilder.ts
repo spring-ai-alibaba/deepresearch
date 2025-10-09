@@ -143,12 +143,12 @@ export function useThoughtChainBuilder(options: ThoughtChainBuilderOptions) {
   const buildOnDSThoughtChain = (jsonArray: any[]): VNode => {
     // 获取背景调查节点
     const backgroundInvestigatorNodeArray = jsonArray.filter((item) => item.nodeName === 'background_investigator')
-    if (backgroundInvestigatorNodeArray.length === 0) {
+    if (backgroundInvestigatorNodeArray.length === 0 || !backgroundInvestigatorNodeArray[0].siteInformation) {
       return buildPendingNodeThoughtChain(jsonArray)
     }
 
     const backgroundInvestigatorNode = backgroundInvestigatorNodeArray[0]
-    const results: SiteInformation[] = backgroundInvestigatorNode.siteInformation
+    const results: SiteInformation[] = backgroundInvestigatorNode.siteInformation[0]
     const markdownContent = results.map((result: SiteInformation, index: number) => {
       return `${index + 1}. [${result.title}](${result.url})\n\n`
     }).join('\n')

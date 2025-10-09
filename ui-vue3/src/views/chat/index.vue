@@ -348,7 +348,6 @@ const bubbleList = computed(() => {
   if(isError) {
     return []
   }
-
   messageStore.history[convId] = messages.value
   return messages.value.map(({id, status, message}, idx) => {
       return {
