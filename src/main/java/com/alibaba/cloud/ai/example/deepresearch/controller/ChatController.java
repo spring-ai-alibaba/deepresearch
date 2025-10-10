@@ -109,7 +109,7 @@ public class ChatController {
 		if (searchBeanUtil.getSearchService(chatRequest.searchEngine()).isEmpty()) {
 			throw new IllegalArgumentException("Search Engine not available.");
 		}
-
+		logger.info("Received chat request: {}", chatRequest);
 		// 创建线程ID
 		GraphId graphId = graphProcess.createNewGraphId(chatRequest.sessionId());
 		chatRequest = ChatRequestProcess.updateThreadId(chatRequest, graphId.threadId());

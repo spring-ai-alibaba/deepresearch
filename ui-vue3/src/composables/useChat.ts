@@ -126,8 +126,8 @@ export function useChat(options: ChatOptions): ChatReturn {
 
         // 最后会返回本次stream的所有内容
         // 将字符串内容转换为符合期望类型的格式
-        const result = [{ content }] as any
-        onSuccess(result)
+        // const result = [{ content }] as any
+        onSuccess(content as any)
       } catch (error) {
         onError(error instanceof Error ? error : new Error(String(error)))
       } finally {

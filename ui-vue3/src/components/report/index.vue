@@ -127,6 +127,7 @@ const items = computed(() => {
     }
     // TODO 性能问题？
     const messages = messageStore.report[props.threadId]
+    console.log('messages', messages)
     arrayTemp.length = 0
     llmStreamCache.clear()
     endFlag.value = false
@@ -272,7 +273,7 @@ const processJsonNode = (node: any) => {
         title = node.displayTitle
         description = '正在收集和分析背景信息'
         if(node.siteInformation && Array.isArray(node.siteInformation)) {
-          content = h(ReferenceSources, { sources: node.siteInformation })
+          content = h(ReferenceSources, { sources: node.siteInformation[0] })
           sources.value = node.siteInformation
         }
         break
@@ -310,7 +311,7 @@ const processJsonNode = (node: any) => {
         break
 
       default:
-        console.log('default', node)
+        // console.log('default', node)
         return
     }
     const item: ThoughtChainItem = {

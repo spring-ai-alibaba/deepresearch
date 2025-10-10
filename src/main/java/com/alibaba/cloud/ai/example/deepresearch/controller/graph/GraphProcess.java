@@ -296,7 +296,7 @@ public class GraphProcess {
 			.map(ChatGenerationMetadata::getFinishReason)
 			.orElse("");
 
-		String textContent = streamingOutput.chunk();
+		String textContent = streamingOutput.chunk() == null ? streamingOutput.chatResponse().getResult().getOutput().getText() : streamingOutput.chunk();
 		Map<String, Serializable> response = Map.of(nodeName, textContent, "step_title", stepTitle, "visible",
 				prefixEnum.isVisible(), "finishReason", finishReason, "graphId", graphId);
 
