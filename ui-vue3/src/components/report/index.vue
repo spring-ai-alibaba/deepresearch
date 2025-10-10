@@ -127,7 +127,6 @@ const items = computed(() => {
     }
     // TODO 性能问题？
     const messages = messageStore.report[props.threadId]
-    console.log('messages', messages)
     arrayTemp.length = 0
     llmStreamCache.clear()
     endFlag.value = false
@@ -308,6 +307,10 @@ const processJsonNode = (node: any) => {
         title = node.displayTitle
         description = '研究完成'
         endFlag.value = true
+        if(node.content){
+          content = h(MD, { content: node.content.final_report })
+          endContent.value = node.content.final_report
+        }
         break
 
       default:

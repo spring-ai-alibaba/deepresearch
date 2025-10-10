@@ -18,12 +18,12 @@ package com.alibaba.cloud.ai.example.deepresearch.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-
 @Controller
 public class RedirectController {
 
-	@RequestMapping({"/", "/ui", "/ui/", "/ui/chat", "/ui/chat/**"})
+	@RequestMapping({ "/", "/ui", "/ui/", "/ui/chat", "/ui/chat/**" })
 	public String frontend() {
 		return "/ui/index.html";
 	}
+
 }

@@ -148,6 +148,7 @@ public class GraphProcess {
 		});
 	}
 
+	@Deprecated
 	public void processStream(GraphId graphId, AsyncGenerator<NodeOutput> generator,
 			Sinks.Many<ServerSentEvent<String>> sink) {
 		final String graphIdStr = this.safeObjectToJson(graphId);
@@ -228,7 +229,6 @@ public class GraphProcess {
 				String content;
 				if (output instanceof StreamingOutput streamingOutput) {
 					logger.debug("Streaming output from node {}: {}, {}", nodeName,
-
 							streamingOutput.chatResponse().getResult().getOutput().getText(), graphId);
 
 					content = buildLLMNodeContent(nodeName, graphId, streamingOutput, output);
@@ -296,7 +296,8 @@ public class GraphProcess {
 			.map(ChatGenerationMetadata::getFinishReason)
 			.orElse("");
 
-		String textContent = streamingOutput.chunk() == null ? streamingOutput.chatResponse().getResult().getOutput().getText() : streamingOutput.chunk();
+		String textContent = streamingOutput.chunk() == null
+				? streamingOutput.chatResponse().getResult().getOutput().getText() : streamingOutput.chunk();
 		Map<String, Serializable> response = Map.of(nodeName, textContent, "step_title", stepTitle, "visible",
 				prefixEnum.isVisible(), "finishReason", finishReason, "graphId", graphId);
 

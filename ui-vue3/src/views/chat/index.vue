@@ -286,7 +286,6 @@ function openDeepResearch(threadId: string) {
 // 重写parseSuccessMessage以避免循环依赖
 const parseSuccessMessageRef = (msg: string) => {
   const result = parseSuccessMessage(msg)
-
   switch (result?.type) {
     case 'chat':
       return result.content
