@@ -146,7 +146,6 @@ export function useThoughtChainBuilder(options: ThoughtChainBuilderOptions) {
     if (backgroundInvestigatorNodeArray.length === 0 || !backgroundInvestigatorNodeArray[0].siteInformation) {
       return buildPendingNodeThoughtChain(jsonArray)
     }
-
     const backgroundInvestigatorNode = backgroundInvestigatorNodeArray[0]
     const results: SiteInformation[] = backgroundInvestigatorNode.siteInformation[0]
     const markdownContent = results.map((result: SiteInformation, index: number) => {
@@ -188,13 +187,13 @@ export function useThoughtChainBuilder(options: ThoughtChainBuilderOptions) {
   /**
    * 构建分析完成的思考链
    */
-  const buildEndDSThoughtChain = (jsonArray: NormalNode[]): VNode | undefined => {
+  const buildEndDSThoughtChain = (jsonArray: any[]): VNode | undefined => {
     const items: ThoughtChainProps['items'] = []
 
     // 获取背景调查节点
     const backgroundInvestigatorNode = jsonArray.filter((item) => item.nodeName === 'background_investigator')[0]
     if (backgroundInvestigatorNode && backgroundInvestigatorNode.siteInformation) {
-      const results = backgroundInvestigatorNode.siteInformation
+      const results: SiteInformation[] = backgroundInvestigatorNode.siteInformation[0]
       const markdownContent = results.map((result: any, index: number) => {
         return `${index + 1}. [${result.title}](${result.url})\n\n`
       }).join('\n')

@@ -25,6 +25,7 @@ import com.alibaba.cloud.ai.example.deepresearch.service.SearchFilterService;
 import com.alibaba.cloud.ai.example.deepresearch.service.SearchInfoService;
 import com.alibaba.cloud.ai.example.deepresearch.service.multiagent.SmartAgentDispatcherService;
 import com.alibaba.cloud.ai.example.deepresearch.service.multiagent.SmartAgentSelectionHelperService;
+import com.alibaba.cloud.ai.example.deepresearch.util.convert.FluxConverter;
 import com.alibaba.cloud.ai.example.deepresearch.util.multiagent.AgentIntegrationUtil;
 import com.alibaba.cloud.ai.example.deepresearch.util.NodeStepTitleUtil;
 import com.alibaba.cloud.ai.example.deepresearch.util.ReflectionProcessor;
@@ -33,7 +34,6 @@ import com.alibaba.cloud.ai.example.deepresearch.util.StateUtil;
 import com.alibaba.cloud.ai.graph.GraphResponse;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
-import com.alibaba.cloud.ai.graph.streaming.FluxConverter;
 import com.alibaba.cloud.ai.graph.streaming.StreamingOutput;
 import com.alibaba.cloud.ai.toolcalling.jinacrawler.JinaCrawlerService;
 import com.alibaba.cloud.ai.toolcalling.searches.SearchEnum;
@@ -43,7 +43,6 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.model.MessageAggregator;
 import org.springframework.ai.mcp.AsyncMcpToolCallbackProvider;
 import reactor.core.publisher.Flux;
 
@@ -184,35 +183,21 @@ public class ResearcherNode implements NodeAction {
 
 			logger.info("ResearcherNode {} starting streaming with key: {}", executorNodeId, nodeName);
 
-//			Flux<GraphResponse<StreamingOutput>> generator = FluxConverter.builder()
-//				.startingNode(nodeNum)
-//				.startingState(state)
-//				.mapResult(response -> {
-//					// Only handle successful responses - errors are handled in doOnError
-//					String researchContent = response.getResult().getOutput().getText();
-//					assignedStep
-//						.setExecutionStatus(ReflectionUtil.getCompletionStatus(reflectionProcessor != null, nodeName));
-//					assignedStep.setExecutionRes(Objects.requireNonNull(researchContent));
-//					logger.info("{} completed, content: {}", nodeName, researchContent);
-//
-//					updated.put("researcher_content_" + executorNodeId, researchContent);
-//					return updated;
-//				})
-//				.build(streamResult);
-
-			Flux<ChatResponse> aggregate = new MessageAggregator().aggregate(streamResult, response -> {
-				String researchContent = response.getResult().getOutput().getText();
-				assignedStep
+			Flux<GraphResponse<StreamingOutput>> generator = FluxConverter.builder()
+				.startingNode(nodeNum)
+				.startingState(state)
+				.mapResult(response -> {
+					// Only handle successful responses - errors are handled in doOnError
+					String researchContent = response.getResult().getOutput().getText();
+					assignedStep
 						.setExecutionStatus(ReflectionUtil.getCompletionStatus(reflectionProcessor != null, nodeName));
-				assignedStep.setExecutionRes(Objects.requireNonNull(researchContent));
-				logger.info("{} completed, content: {}", nodeName, researchContent);
-				state.updateState(Map.of("researcher_content_" + executorNodeId, researchContent));
-			});
+					assignedStep.setExecutionRes(Objects.requireNonNull(researchContent));
+					logger.info("{} completed, content: {}", nodeName, researchContent);
 
-			Flux<GraphResponse<StreamingOutput>> generator = aggregate.map(response -> {
-				StreamingOutput output = new StreamingOutput(response, prefix, state);
-				return GraphResponse.of(output);
-			});
+					updated.put("researcher_content_" + executorNodeId, researchContent);
+					return updated;
+				})
+				.buildWithChatResponse(streamResult);
 
 			updated.put("researcher_content_" + executorNodeId, generator);
 			return updated;

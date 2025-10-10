@@ -24,11 +24,11 @@ import com.alibaba.cloud.ai.example.deepresearch.model.req.GraphId;
 import com.alibaba.cloud.ai.example.deepresearch.service.ReportService;
 import com.alibaba.cloud.ai.example.deepresearch.service.SessionContextService;
 import com.alibaba.cloud.ai.example.deepresearch.util.StateUtil;
+import com.alibaba.cloud.ai.example.deepresearch.util.convert.FluxConverter;
 import com.alibaba.cloud.ai.graph.GraphResponse;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
 import com.alibaba.cloud.ai.graph.state.strategy.ReplaceStrategy;
-import com.alibaba.cloud.ai.graph.streaming.FluxConverter;
 import com.alibaba.cloud.ai.graph.streaming.StreamingOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,6 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.model.MessageAggregator;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 
@@ -127,42 +126,25 @@ public class ReporterNode implements NodeAction {
 
 		Flux<ChatResponse> streamResult = reporterAgent.prompt().messages(messages).stream().chatResponse();
 
-//		Flux<GraphResponse<StreamingOutput>> generator = FluxConverter.builder()
-//			.startingNode(prefix)
-//			.startingState(state)
-//			.mapResult(response -> {
-//				String finalReport = Objects.requireNonNull(response.getResult().getOutput().getText());
-//				try {
-//					GraphId graphId = new GraphId(sessionId, threadId);
-//					String userQuery = state.value("query", String.class).orElse("UNKNOWN");
-//					sessionContextService.addSessionHistory(graphId,
-//							SessionHistory.builder().graphId(graphId).userQuery(userQuery).report(finalReport).build());
-//					logger.info("Report saved successfully, Thread ID: {}", threadId);
-//				}
-//				catch (Exception e) {
-//					logger.error("Failed to save report, Thread ID: {}", threadId, e);
-//				}
-//				return Map.of("final_report", finalReport, "thread_id", threadId);
-//			})
-//			.build(streamResult);
-		Flux<ChatResponse> aggregate = new MessageAggregator().aggregate(streamResult, response -> {
-			String finalReport = Objects.requireNonNull(response.getResult().getOutput().getText());
-			try {
-				GraphId graphId = new GraphId(sessionId, threadId);
-				String userQuery = state.value("query", String.class).orElse("UNKNOWN");
-				sessionContextService.addSessionHistory(graphId,
-						SessionHistory.builder().graphId(graphId).userQuery(userQuery).report(finalReport).build());
-				logger.info("Report saved successfully, Thread ID: {}", threadId);
-			}
-			catch (Exception e) {
-				logger.error("Failed to save report, Thread ID: {}", threadId, e);
-			}
-			state.updateState(Map.of("final_report", finalReport, "thread_id", threadId));
-		});
-		Flux<GraphResponse<StreamingOutput>> generator = aggregate.map(response -> {
-			StreamingOutput output = new StreamingOutput(response, prefix, state);
-			return GraphResponse.of(output);
-		});
+		Flux<GraphResponse<StreamingOutput>> generator = FluxConverter.builder()
+			.startingNode(prefix)
+			.startingState(state)
+			.mapResult(response -> {
+				String finalReport = Objects.requireNonNull(response.getResult().getOutput().getText());
+				try {
+					GraphId graphId = new GraphId(sessionId, threadId);
+					String userQuery = state.value("query", String.class).orElse("UNKNOWN");
+					sessionContextService.addSessionHistory(graphId,
+							SessionHistory.builder().graphId(graphId).userQuery(userQuery).report(finalReport).build());
+					logger.info("Report saved successfully, Thread ID: {}", threadId);
+				}
+				catch (Exception e) {
+					logger.error("Failed to save report, Thread ID: {}", threadId, e);
+				}
+				return Map.of("final_report", finalReport, "thread_id", threadId);
+			})
+			.buildWithChatResponse(streamResult);
+
 		Map<String, Object> resultMap = new HashMap<>();
 		resultMap.put("final_report", generator);
 		resultMap.put("thread_id", threadId);
