@@ -129,7 +129,7 @@ public class ResearcherNode implements NodeAction {
 
 			// Add researcher-specific citation reminder
             Message citationMessage = new UserMessage(
-                    "IMPORTANT: DO NOT include inline citations in the text. Instead, track all sources and include a References section at the end using link reference format. Include an empty line between each citation for better readability. Use this format for each reference:\\n- [Source Title](URL)\\n\\n- [Source Title](URL)");
+                    "IMPORTANT: DO NOT include inline citations in the text. Instead, track all sources and include a References section at the end using link reference format. Include an empty line between each citation for better readability. Use this format for each reference:\\n- [Source Title](URL)\\n- [Source Title](URL)");
             messages.add(citationMessage);
 
 			logger.debug("{} Node messages: {}", nodeName, messages);
