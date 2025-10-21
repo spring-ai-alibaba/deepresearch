@@ -176,6 +176,11 @@ public class RagProperties {
 		private boolean queryTranslationEnabled = false;
 
 		/**
+		 * 是否启用假设性文档嵌入功能，默认为false。
+		 */
+		private boolean HypotheticalDocumentEmbeddingEnabled = false;
+
+		/**
 		 * 查询翻译的目标语言，默认为"English"。
 		 */
 		private String queryTranslationLanguage = "English";
@@ -218,6 +223,14 @@ public class RagProperties {
 
 		public void setQueryTranslationEnabled(boolean queryTranslationEnabled) {
 			this.queryTranslationEnabled = queryTranslationEnabled;
+		}
+
+		public boolean isHypotheticalDocumentEmbeddingEnabled() {
+			return HypotheticalDocumentEmbeddingEnabled;
+		}
+
+		public void setHypotheticalDocumentEmbeddingEnabled(boolean hypotheticalDocumentEmbeddingEnabled) {
+			HypotheticalDocumentEmbeddingEnabled = hypotheticalDocumentEmbeddingEnabled;
 		}
 
 		public String getQueryTranslationLanguage() {
