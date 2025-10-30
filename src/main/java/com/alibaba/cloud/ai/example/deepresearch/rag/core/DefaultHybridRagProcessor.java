@@ -23,6 +23,7 @@ import com.alibaba.cloud.ai.example.deepresearch.config.rag.RagProperties;
 import com.alibaba.cloud.ai.example.deepresearch.rag.post.DocumentSelectFirstProcess;
 import com.alibaba.cloud.ai.example.deepresearch.rag.retriever.RrfHybridElasticsearchRetriever;
 import com.alibaba.cloud.ai.example.deepresearch.rag.strategy.RrfFusionStrategy;
+import com.alibaba.cloud.ai.example.deepresearch.rag.transformer.HyDeTransformer;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +65,8 @@ public class DefaultHybridRagProcessor implements HybridRagProcessor {
 
 	private final TranslationQueryTransformer queryTransformer;
 
+	private final HyDeTransformer hyDeTransformer;
+
 	private final DocumentSelectFirstProcess documentPostProcessor;
 
 	private final RrfFusionStrategy rrfFusionStrategy;
@@ -97,6 +100,9 @@ public class DefaultHybridRagProcessor implements HybridRagProcessor {
 					.targetLanguage(ragProperties.getPipeline().getQueryTranslationLanguage())
 					.build()
 				: null;
+
+		this.hyDeTransformer = ragProperties.getPipeline().isHypotheticalDocumentEmbeddingEnabled()
+				? HyDeTransformer.builder().chatClientBuilder(chatClientBuilder).build() : null;
 
 		// 初始化文档后处理器
 		this.documentPostProcessor = ragProperties.getPipeline().isPostProcessingSelectFirstEnabled()
@@ -133,13 +139,21 @@ public class DefaultHybridRagProcessor implements HybridRagProcessor {
 		if (queryTransformer != null) {
 			queries = queries.stream().flatMap(q -> {
 				org.springframework.ai.rag.Query transformed = queryTransformer.transform(q);
-				return transformed != null ? Stream.of(transformed) : Stream.empty();
+				return Stream.of(transformed);
 			}).collect(Collectors.toList());
 		}
 
 		// 查询扩展
 		if (queryExpander != null) {
 			queries = queries.stream().flatMap(q -> queryExpander.expand(q).stream()).collect(Collectors.toList());
+		}
+
+		// 假设性文档生成
+		if (hyDeTransformer != null) {
+			queries = queries.stream().flatMap(q -> {
+				org.springframework.ai.rag.Query transformed = hyDeTransformer.transform(q);
+				return Stream.of(transformed);
+			}).collect(Collectors.toList());
 		}
 
 		return queries;
