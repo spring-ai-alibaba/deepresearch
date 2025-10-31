@@ -110,8 +110,8 @@ public class BackgroundInvestigationNode implements NodeAction {
 
 			Message messages = new UserMessage(
 					"搜索问题:" + query + "\n" + "以下是搜索结果：\n\n" + searchResults.stream().map(r -> {
-						return String.format("标题: %s\n权重: %s\n内容: %s\n", r.get("title"), r.get("weight"),
-								r.get("content"));
+						return String.format("标题: %s\n权重: %s\n内容: %s\nurl: %s\n", r.get("title"), r.get("weight"),
+								r.get("content"), r.get("url"));
 					}).collect(Collectors.joining("\n\n")));
 
 			String sessionId = state.value("session_id", String.class).orElse("__default__");
