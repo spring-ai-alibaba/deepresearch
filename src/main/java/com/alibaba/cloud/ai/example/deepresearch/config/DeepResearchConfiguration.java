@@ -268,7 +268,7 @@ public class DeepResearchConfiguration {
 					Map.of("planner", "planner", "research_team", "research_team", END, END))
 			.addConditionalEdges("research_team", edge_async(new ResearchTeamDispatcher()),
 					Map.of("professional_kb_decision", "professional_kb_decision", "parallel_executor",
-							"parallel_executor", END, END))
+							"parallel_executor", "planner", "planner", END, END))
 			.addConditionalEdges("professional_kb_decision", edge_async(new ProfessionalKbDispatcher()),
 					Map.of("professional_kb_rag", "professional_kb_rag", "reporter", "reporter", END, END))
 			.addEdge("professional_kb_rag", "reporter")
